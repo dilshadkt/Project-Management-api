@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
@@ -41,7 +41,8 @@ export const registerUser = async (req: Request, res: Response) => {
 
     res.status(200).json({
       success: true,
-      token: `Bearer ${token}`,
+      // token: `Bearer ${token}`,
+      token: `${token}`,
       user: registeredUser,
     });
   } catch (error) {
@@ -86,7 +87,7 @@ export const loginUser = async (req: Request, res: Response) => {
     }
     res.status(200).json({
       success: true,
-      token: `Bearer ${token}`,
+      token: `${token}`,
       user: {
         id: user.id,
         firstName: user.firstName,

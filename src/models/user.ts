@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import { Schema, Document } from 'mongoose';
 import { ROLES } from '../constants/index';
-import Joi from 'joi';
 
 interface UserProps extends Document {
   firstName: string;
