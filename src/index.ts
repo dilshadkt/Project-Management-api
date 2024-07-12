@@ -6,19 +6,21 @@ import router from './routes';
 import { keys } from './config/keys';
 import connectDB from './utils/db';
 
-const { port } = keys;
+const { port, origin } = keys;
 const app = express();
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
+
 app.use(
   cors({
-    origin: 'http://localhost:3000',
+    origin: origin || 'http://localhost:3000',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true,
   }),
 );
+
 connectDB(); // DB SETUP
 app.use(router);
 app.listen(port, () => {
