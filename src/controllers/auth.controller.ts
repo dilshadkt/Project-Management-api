@@ -44,11 +44,11 @@ export const registerUser = async (req: Request, res: Response) => {
     res.setHeader(
       'Set-Cookie',
       serialize('token', token, {
-        httpOnly: true,
-        // secure: process.env.NODE_ENV === 'production',
+        // httpOnly: true,
+        secure: false,
         // sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
         maxAge: 3600,
-        // path: '/',
+        path: '/',
       }),
     );
     res.status(200).json({
@@ -100,9 +100,10 @@ export const loginUser = async (req: Request, res: Response) => {
     res.setHeader(
       'Set-Cookie',
       serialize('token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+        // httpOnly: true,
+        // secure: process.env.NODE_ENV === 'production',
+        secure: false,
+        // sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
         maxAge: 3600,
         path: '/',
       }),
@@ -163,11 +164,9 @@ export const logoutUser = async (req: Request, res: Response) => {
 
     res.status(200).json({ success: true, message: 'Logout successful' });
   } catch (error) {
-    res
-      .status(400)
-      .json({
-        error: 'Your request could not be processed. Please try again.',
-      });
+    res.status(400).json({
+      error: 'Your request could not be processed. Please try again.',
+    });
     console.error(error);
   }
 };
