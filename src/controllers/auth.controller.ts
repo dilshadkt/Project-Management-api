@@ -44,7 +44,7 @@ export const registerUser = async (req: Request, res: Response) => {
     res.setHeader(
       'Set-Cookie',
       serialize('token', token, {
-        // httpOnly: true,
+        httpOnly: true,
         secure: false,
         // sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
         maxAge: 3600,
@@ -100,7 +100,7 @@ export const loginUser = async (req: Request, res: Response) => {
     res.setHeader(
       'Set-Cookie',
       serialize('token', token, {
-        // httpOnly: true,
+        httpOnly: true,
         // secure: process.env.NODE_ENV === 'production',
         secure: false,
         // sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
@@ -156,7 +156,7 @@ export const logoutUser = async (req: Request, res: Response) => {
       serialize('token', '', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+        // sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
         expires: new Date(0), // Expire immediately
         path: '/',
       }),
