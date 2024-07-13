@@ -127,26 +127,7 @@ export const loginUser = async (req: Request, res: Response) => {
 };
 
 export const accessToDashboard = (req: Request, res: Response) => {
-  console.log(req.body);
-  console.log('object');
-  const token = req.body.value;
-  if (!token)
-    return res
-      .status(401)
-      .json({ status: false, message: 'Not authenticated' });
-  jwt.verify(
-    token,
-    process.env.JWT_SECRET as string,
-    async (err: jwt.VerifyErrors | null, palyload: JwtPayload | any) => {
-      if (err) return res.status(403).json({ message: 'Token is not valid' });
-      if (palyload) {
-        res.status(200).json({ status: true });
-      } else {
-        res.status(403).json({ status: false, message: 'Token is not valid' });
-      }
-    },
-  );
-  // res.status(200).json({ status: true });
+  res.status(200).json({ status: true });
 };
 
 // Logout User
@@ -159,7 +140,7 @@ export const logoutUser = async (req: Request, res: Response) => {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         // sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-        expires: new Date(0), // Expire immediately
+        expires: new Date(0),
         path: '/',
       }),
     );
