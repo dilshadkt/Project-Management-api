@@ -127,6 +127,8 @@ export const loginUser = async (req: Request, res: Response) => {
 };
 
 export const accessToDashboard = (req: Request, res: Response) => {
+  console.log(req.body);
+  console.log('object');
   const token = req.body.value;
   if (!token)
     return res
