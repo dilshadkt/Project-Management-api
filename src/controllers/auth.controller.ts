@@ -45,10 +45,10 @@ export const registerUser = async (req: Request, res: Response) => {
       'Set-Cookie',
       serialize('token', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+        // secure: process.env.NODE_ENV === 'production',
+        // sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
         maxAge: 3600,
-        path: '/',
+        // path: '/',
       }),
     );
     res.status(200).json({
@@ -101,10 +101,10 @@ export const loginUser = async (req: Request, res: Response) => {
       'Set-Cookie',
       serialize('token', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+        // secure: process.env.NODE_ENV === 'production',
+        // sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
         maxAge: 3600,
-        path: '/',
+        // path: '/',
       }),
     );
     res.status(200).json({
