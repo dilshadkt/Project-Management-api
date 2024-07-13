@@ -145,3 +145,29 @@ export const accessToDashboard = (req: Request, res: Response) => {
   );
   // res.status(200).json({ status: true });
 };
+
+// Logout User
+export const logoutUser = async (req: Request, res: Response) => {
+  try {
+    // Clear the token cookie
+    res.setHeader(
+      'Set-Cookie',
+      serialize('token', '', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+        expires: new Date(0), // Expire immediately
+        path: '/',
+      }),
+    );
+
+    res.status(200).json({ success: true, message: 'Logout successful' });
+  } catch (error) {
+    res
+      .status(400)
+      .json({
+        error: 'Your request could not be processed. Please try again.',
+      });
+    console.error(error);
+  }
+};
