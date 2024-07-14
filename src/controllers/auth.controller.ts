@@ -1,11 +1,10 @@
-import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
-import jwt, { JwtPayload } from 'jsonwebtoken';
 import { serialize } from 'cookie';
+import { Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
 //model && helpers
-import { User } from '../models/user';
 import { keys } from '../config/keys';
-import { verifyToken } from '../middleware/verifyToken';
+import { User } from '../models/user';
 
 const { secret, tokenLife } = keys.jwt;
 
@@ -125,12 +124,12 @@ export const loginUser = async (req: Request, res: Response) => {
     console.log(error);
   }
 };
-
+//
 export const accessToDashboard = (req: Request, res: Response) => {
   res.status(200).json({ status: true });
 };
 
-// Logout User
+// LOGOUT USER
 export const logoutUser = async (req: Request, res: Response) => {
   try {
     // Clear the token cookie
