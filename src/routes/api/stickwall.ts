@@ -45,7 +45,6 @@ export default router;
  */
 
 //       CREATE STICK
-
 /**
  * @swagger
  * /api/stick/create:
@@ -68,7 +67,6 @@ export default router;
  */
 
 //       GET ALL STICK
-
 /**
  * @swagger
  * /api/stick/:
@@ -96,7 +94,6 @@ export default router;
  */
 
 // UPDATE STICK
-
 /**
  * @swagger
  * /api/stick/{stickId}:
