@@ -32,7 +32,6 @@ export const registerUser = async (req: Request, res: Response) => {
     const hashPassword = await bcrypt.hash(user.password, salt);
     user.password = hashPassword;
     const registeredUser = await user.save();
-    console.log(registeredUser);
     const payload = {
       id: registeredUser._id,
       name: `${user.firstName} ${user.lastName}`,
