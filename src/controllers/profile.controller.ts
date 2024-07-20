@@ -43,7 +43,7 @@ export const updateUserData = async (req: CustomRequest, res: Response) => {
     res.status(200).json({
       success: true,
       message: 'User updated',
-      stick: updatedUser,
+      user: updatedUser,
     });
   } catch (error) {
     res.status(400).json({
