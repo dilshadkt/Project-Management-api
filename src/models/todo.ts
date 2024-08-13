@@ -16,6 +16,15 @@ const todoSchema: Schema = new Schema({
   description: {
     type: String,
   },
+  list: {
+    type: String,
+  },
+  tags: {
+    type: String,
+  },
+  subtasks: {
+    type: [String],
+  },
   user_id: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,

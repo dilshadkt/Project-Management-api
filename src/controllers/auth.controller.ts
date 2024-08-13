@@ -5,13 +5,15 @@ import jwt from 'jsonwebtoken';
 //model && helpers
 import { keys } from '../config/keys';
 import { User } from '../models/user';
+import { generatOtp } from '../utils/generateOtp';
+import { sendOTP } from '../utils/sendOtp';
 
 const { secret, tokenLife } = keys.jwt;
 
 //REGISTER USER
 export const registerUser = async (req: Request, res: Response) => {
   try {
-    const { email, password, firstName, lastName } = req.body;
+    const { email, password, firstName, lastName, googleId } = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -19,18 +21,37 @@ export const registerUser = async (req: Request, res: Response) => {
         .status(400)
         .json({ error: 'That email address is already in use.' });
     }
+    let user;
+    if (googleId) {
+      // Google Authentication
+      user = new User({
+        email,
+        firstName,
+        lastName,
+        googleId,
+        authMethod: 'google',
+      });
+    } else {
+      // Manual Registration
+      if (!password) {
+        return res.status(400).json({
+          error: 'Password is required',
+        });
+      }
+      user = new User({
+        email,
+        password,
+        firstName,
+        lastName,
+        authMethod: 'local',
+      });
 
-    const user = new User({
-      email,
-      password,
-      firstName,
-      lastName,
-    });
+      // Hash password
+      const salt = await bcrypt.genSalt(10);
+      const hashPassword = await bcrypt.hash(password, salt);
+      user.password = hashPassword;
+    }
 
-    //hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashPassword = await bcrypt.hash(user.password, salt);
-    user.password = hashPassword;
     const registeredUser = await user.save();
     const payload = {
       id: registeredUser._id,
@@ -51,7 +72,6 @@ export const registerUser = async (req: Request, res: Response) => {
     );
     res.status(200).json({
       success: true,
-      // token: `Bearer ${token}`,
       token: `${token}`,
       user: registeredUser,
     });
@@ -66,61 +86,87 @@ export const registerUser = async (req: Request, res: Response) => {
 //LOGIN USER
 export const loginUser = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, googleId } = req.body;
     if (!email) {
       return res.status(400).json({ error: 'You must enter an email.' });
     }
-
-    if (!password) {
-      return res.status(400).json({ error: 'You must enter a password.' });
-    }
     const user = await User.findOne({ email });
+
     if (!user) {
       return res
         .status(400)
-        .send({ error: 'No user found for this email address.' });
+        .json({ error: 'No user found for this email address' });
     }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({
+    let isAuthenticated = false;
+    if (googleId) {
+      if (user.googleId === googleId) {
+        isAuthenticated = true;
+      } else {
+        return res.status(400).json({
+          success: false,
+          error: 'Google authentication failed',
+        });
+      }
+    } else {
+      if (!password) {
+        return res.status(400).json({ error: 'You must enter a password' });
+      }
+      if (user.authMethod === 'google') {
+        return res.status(400).json({
+          success: false,
+          error:
+            'This account uses Google authentication.Please sign in with Google',
+        });
+      }
+      isAuthenticated = await bcrypt.compare(password, user.password as string);
+      if (!isAuthenticated) {
+        return res.status(400).json({
+          success: false,
+          error: 'Password Incorrect',
+        });
+      }
+    }
+    if (isAuthenticated) {
+      const payload = {
+        id: user._id,
+      };
+      const token = jwt.sign(payload, secret as string, {
+        expiresIn: tokenLife,
+      });
+      if (!token) {
+        throw new Error();
+      }
+      res.setHeader(
+        'Set-Cookie',
+        serialize('token', token, {
+          httpOnly: true,
+          // secure: process.env.NODE_ENV === 'production',
+          secure: false,
+          // sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+          maxAge: 3600,
+          path: '/',
+        }),
+      );
+      res.status(200).json({
+        success: true,
+        token: `${token}`,
+        user: {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+        },
+      });
+    } else {
+      res.status(400).json({
         success: false,
-        error: 'Password Incorrect',
+        error: 'Authentication failed',
       });
     }
-    const payload = {
-      id: user._id,
-    };
-    const token = jwt.sign(payload, secret as string, { expiresIn: tokenLife });
-    if (!token) {
-      throw new Error();
-    }
-    res.setHeader(
-      'Set-Cookie',
-      serialize('token', token, {
-        httpOnly: true,
-        // secure: process.env.NODE_ENV === 'production',
-        secure: false,
-        // sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-        maxAge: 3600,
-        path: '/',
-      }),
-    );
-    res.status(200).json({
-      success: true,
-      token: `${token}`,
-      user: {
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-      },
-    });
   } catch (error) {
     res.status(400).json({
       error: 'Your request could not be processed. Please try again.',
     });
-    console.log(error);
   }
 };
 //
@@ -149,5 +195,47 @@ export const logoutUser = async (req: Request, res: Response) => {
       error: 'Your request could not be processed. Please try again.',
     });
     console.error(error);
+  }
+};
+// SEND OTP TO THE USER GIVEN EMIAL
+const otpStore: any = {};
+
+export const GetOtp = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+    const user = await User.findOne({ email });
+    if (user) {
+      return res.status(400).json({ error: 'User already exist' });
+    }
+    const otp = generatOtp();
+    otpStore[email] = otp;
+    sendOTP(email, otp);
+    res.status(200).json({ success: true });
+  } catch (error) {
+    res.status(400).json({
+      error: 'Your request for otp could not be processed. Please try again.',
+    });
+  }
+};
+
+export const VerifyOtp = async (req: Request, res: Response) => {
+  try {
+    const { otp, email } = req.body;
+    if (!otp) {
+      return res.status(400).json({ error: 'Otp is required' });
+    }
+    if (Number(otpStore[email] === Number(otp))) {
+      res.status(200).json({ success: true });
+    } else {
+      res.status(400).json({ error: 'Invalid otp' });
+    }
+  } catch (error) {
+    res.status(400).json({
+      error:
+        'Your request for verify otp could not be processed. Please try again.',
+    });
   }
 };

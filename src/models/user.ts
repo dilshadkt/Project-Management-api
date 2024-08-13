@@ -6,14 +6,20 @@ interface UserProps extends Document {
   firstName: string;
   lastName: string;
   email: string;
-  password: string;
+  password?: string;
+  avatar?: string;
+  role?: string;
+  created?: Date;
+  googleId?: string;
+  authMethod: 'local' | 'google';
 }
 
 //user schema
-const userSchema: Schema = new Schema({
+const userSchema: Schema<UserProps> = new Schema({
   email: {
     type: String,
     required: true,
+    unique: true,
   },
   firstName: {
     type: String,
@@ -25,7 +31,9 @@ const userSchema: Schema = new Schema({
   },
   password: {
     type: String,
-    required: true,
+    required: function () {
+      return this.authMethod === 'local';
+    },
   },
   avatar: {
     type: String,
@@ -39,6 +47,15 @@ const userSchema: Schema = new Schema({
   created: {
     type: Date,
     default: Date.now,
+  },
+  googleId: {
+    type: String,
+    default: null,
+  },
+  authMethod: {
+    type: String,
+    required: true,
+    enum: ['local', 'google'],
   },
 });
 

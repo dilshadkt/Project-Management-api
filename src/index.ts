@@ -5,10 +5,24 @@ import cors from 'cors';
 import router from './routes';
 import { keys } from './config/keys';
 import connectDB from './utils/db';
-
+import session from 'express-session';
+import passport from 'passport';
+import './routes/api/googleAuth';
 const { port, origin } = keys;
 const app = express();
 
+// Set up session middleware
+app.use(
+  session({
+    secret: 'express',
+    resave: false,
+    saveUninitialized: true,
+  }),
+);
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());

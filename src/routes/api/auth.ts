@@ -6,8 +6,11 @@ import {
   loginUser,
   logoutUser,
   registerUser,
+  GetOtp,
+  VerifyOtp,
 } from '../../controllers/auth.controller';
 import { verifyToken } from '../../middleware/verifyToken';
+
 const router = express.Router();
 
 // RESTISTER NEW USER 🪁
@@ -16,6 +19,8 @@ router.post('/register', validate(userValidationSchema), registerUser);
 router.post('/login', loginUser);
 router.post('/logout', logoutUser);
 router.post('/home', verifyToken, accessToDashboard);
+router.post('/get-otp', GetOtp);
+router.post('/verify-otp', VerifyOtp);
 
 export default router;
 
